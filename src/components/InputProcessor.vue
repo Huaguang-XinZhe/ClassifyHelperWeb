@@ -1,14 +1,67 @@
 <!-- @format -->
 
 <script setup lang="ts">
-import {UploadFilled} from "@element-plus/icons-vue";
-import {computed, ref} from "vue";
+import { UploadFilled } from "@element-plus/icons-vue";
+import { computed, ref, watch, type WatchStopHandle } from "vue";
+import type { UploadProps } from "element-plus";
+import { ElMessage } from "element-plus";
+import { useAppStore } from "@/stores/appStore";
+import { useRouter } from "vue-router";
+import { useInputProcessor } from "@/hooks/useInputProcessor";
+import type { Input } from "@/types";
 
 const radio = ref("文件读取");
 const input = ref("");
+const appStore = useAppStore();
+const router = useRouter();
+const { parseInput, extractTagsArr, postInputList } = useInputProcessor();
 const upload = computed(() => {
   return radio.value === "文件读取";
 });
+
+const beforeUpload: UploadProps["beforeUpload"] = (rawFile) => {
+  if (rawFile.size / 1024 > 500) {
+    ElMessage.error("Avatar picture size can not exceed 2MB!");
+    return false;
+  } else {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      // 这里的 e 是 ProgressEvent
+      console.log(e);
+      // console.log(e.target);
+      // console.log(e.target?.result);
+    };
+    reader.readAsText(rawFile);
+    // return false;
+    return true;
+  }
+};
+
+const handleClick = () => {
+  if (!input.value) {
+    ElMessage.warning("没点东西你就想走？👀");
+    return;
+  }
+
+  const inputList = parseInput(input.value);
+  const tagsArr = extractTagsArr(inputList);
+
+  appStore.setInputList(inputList);
+  appStore.addNodes(tagsArr);
+
+  navigateAndRequest(inputList);
+};
+
+function navigateAndRequest(inputList: Input[]) {
+  router
+    .push("/main")
+    .then(() => {
+      postInputList(inputList);
+    })
+    .catch((error) => {
+      ElMessage.error("跳转失败", error.message);
+    });
+}
 </script>
 
 <template>
@@ -16,31 +69,41 @@ const upload = computed(() => {
     <el-radio-button label="文件读取" />
     <el-radio-button label="粘贴文本" />
   </el-radio-group>
+  <!--  这里的 before-upload 不能用 @，没效果！-->
+  <!--
+    提出来：ref="uploadRef"
+   -->
   <el-upload
-      v-if="upload"
-      class="upload-demo"
-      drag
-      action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
-      multiple
+    v-if="upload"
+    drag
+    action="https://wahaha.com"
+    :show-file-list="false"
+    accept=".md, text/plain"
+    :limit="1"
+    :before-upload="beforeUpload"
+    :auto-upload="false"
   >
     <el-icon class="el-icon--upload"><upload-filled /></el-icon>
     <div class="el-upload__text">
       Drop file here or <em>click to upload</em>
     </div>
+    <!--    不能删这个类，它有绑定的样式-->
     <template #tip>
       <div class="el-upload__tip">
-        jpg/png files with a size less than 500kb
+        只支持 .md, .txt 格式文件，且不超过 500kb
       </div>
     </template>
   </el-upload>
-  <el-input
-      v-else
+  <div v-else class="my-input">
+    <el-input
       v-model="input"
-      class="my-input"
-      :autosize="{minRows: 10, maxRows: 25}"
+      :autosize="{ minRows: 10, maxRows: 25 }"
       type="textarea"
       placeholder="Please input"
-  />
+    />
+    <el-button @click="handleClick">确定</el-button>
+  </div>
+  <!-- <button @click="submitUpload">手动上传</button> -->
 </template>
 
 <style scoped>

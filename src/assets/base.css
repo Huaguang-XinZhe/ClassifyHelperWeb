@@ -25,7 +25,7 @@ h1 {
 
 /* 滚动条内部的滑块 */
 ::-webkit-scrollbar-thumb {
-  background-color: rgb(238, 238, 238); /* 滑块的颜色 */
+  background-color: rgb(190, 186, 186); /* 滑块的颜色 */
   border-radius: 10px; /* 滑块的圆角 */
 }
 

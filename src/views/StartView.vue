@@ -8,9 +8,6 @@ import InputProcessor from "@/components/InputProcessor.vue";
   <div class="container">
     <h1>开始吧</h1>
     <InputProcessor />
-    <RouterLink to="/main">
-      <button>跳转到主页面</button>
-    </RouterLink>
   </div>
 </template>
 

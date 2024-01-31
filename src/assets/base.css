@@ -7,10 +7,18 @@ body {
   margin: 0;
 }
 
+#app {
+  height: 100%; /* 在 body 用 vh 指定了高度的情况下，100% 就有效了！ */
+}
+
 /*去掉 ul 的 margin 和 padding*/
 ul {
   margin: 0;
   padding: 0;
+}
+
+li {
+  list-style: none;
 }
 
 h1 {
@@ -33,8 +41,4 @@ h1 {
 ::-webkit-scrollbar-thumb:hover {
   background: rgb(225, 225, 233);
   cursor: pointer; /* 这个小手不会呈现！ */
-}
-
-#app {
-  height: 100%; /* 在 body 用 vh 指定了高度的情况下，100% 就有效了！ */
 }

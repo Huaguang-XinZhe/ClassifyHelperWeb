@@ -1,4 +1,4 @@
-class MyNode {
+export class MyNode {
   label: string;
   count: number;
   children: MyNode[];

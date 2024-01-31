@@ -2,7 +2,7 @@
 
 <script setup lang="ts">
 import { UploadFilled } from "@element-plus/icons-vue";
-import { computed, ref, watch, type WatchStopHandle } from "vue";
+import { computed, ref } from "vue";
 import type { UploadProps } from "element-plus";
 import { ElMessage } from "element-plus";
 import { useAppStore } from "@/stores/appStore";
@@ -50,6 +50,9 @@ const handleClick = () => {
   appStore.addNodes(tagsArr);
 
   navigateAndRequest(inputList);
+
+  // 清空输入框
+  input.value = "";
 };
 
 function navigateAndRequest(inputList: Input[]) {

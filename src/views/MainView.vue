@@ -4,53 +4,48 @@
 import CatTree from "@/components/CatTree.vue";
 import ContentList from "@/components/ContentList.vue";
 import RuleExplorer from "@/components/RuleExplorer.vue";
-import {useAppStore} from "@/stores/appStore";
+import { useAppStore } from "@/stores/appStore";
 import AppendDialog from "@/components/AppendDialog.vue";
 
 const appStore = useAppStore();
 </script>
 
 <template>
-  <div class="container">
-    <header>
+  <el-container class="container">
+    <el-header>
       <button @click="appStore.showDialog()">新增待分类内容</button>
-    </header>
-    <main>
+    </el-header>
+    <el-main>
       <!-- 左栏 -->
-      <aside class="left-block">
-        <ContentList />
-      </aside>
+      <ContentList />
       <!-- 右栏 -->
-      <aside class="right-block">
+      <div class="right-block">
         <!-- 右上栏 -->
-        <section>
-          <CatTree />
-        </section>
+        <CatTree />
         <!-- 右下栏 -->
-        <section>
-          <RuleExplorer/>
-        </section>
-      </aside>
-    </main>
-  </div>
-  <AppendDialog/>
+        <RuleExplorer />
+      </div>
+    </el-main>
+  </el-container>
+  <AppendDialog />
 </template>
 
 <style scoped>
-.container {
-  height: 100%;
+.el-container {
+  width: 100vw;
+  height: 100vh;
 }
-header {
- height: 6%;
- background-color: rgb(128, 128, 128);
+
+.el-header {
+  height: 6vh;
 }
-main {
-  height: 94%;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+
+.el-main {
+  height: 94vh;
+  display: flex;
 }
 .right-block {
-  display: grid;
-  grid-template-rows: 1fr 1fr;
+  width: 50%;
+  height: 100%;
 }
 </style>

@@ -1,15 +1,21 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
-import { useAppStore } from "@/stores/appStore";
+import { computed, onMounted, ref, toRef, watch } from "vue";
 import type { Input } from "@/types";
 import { ElMessage } from "element-plus";
 import { Delete } from "@element-plus/icons-vue";
+import { useVditorStore } from "@/stores/vditorStore";
+import { useCategorizerStore } from "@/stores/categorizerStore";
+import { useInputStore } from "@/stores/inputStore";
 
-const appStore = useAppStore();
+const { initializeVditor, getVditorValue, setVditorValue } = useVditorStore();
+const categorizerStore = useCategorizerStore();
+const categorizerVisible = toRef(categorizerStore, "categorizerVisible");
+const { unclassifiedInputs, deleteInput, updateAllInputs } = useInputStore();
+
 // 维护一个索引（响应式），用于切换到下一个或上一个内容
 let currentIndex = ref(0);
 // 拷贝一个未分类列表（它必须得是响应式属性，要不然重新进入沉浸式类属后不会变化）
-const copyInputs = computed(() => appStore.unclassifiedInputs);
+const copyInputs = computed(() => unclassifiedInputs);
 // 维护一个更新列表，记录已更新的 Input 对象
 const updatedInputs: Input[] = [];
 // 一个一个取，从未分类数组中取出来的当前 Input 对象（计算属性）
@@ -19,16 +25,17 @@ const currentInput = computed(() => {
 
 onMounted(() => {
   console.log("ImmersiveCategorizer mounted");
-  appStore.initializeVditor(currentInput.value.content ?? "当前 Input 为空！");
+  initializeVditor(currentInput.value.content ?? "当前 Input 为空！");
   // 组件挂载后就给 Vditor 设置真正的初始值
   // setCurrentContentToVditor();
 });
 
 // 监视沉浸式模态框的显示状态，一显示就聚焦到类属输入框
 watch(
-  () => appStore.categorizerVisible,
+  () => categorizerVisible,
   (newVal) => {
     if (newVal) {
+      console.log("categorizerVisible changed to true");
       setTimeout(() => {
         classRef.value?.focus();
       }, 50);
@@ -36,23 +43,6 @@ watch(
   },
 );
 
-// const md = new Remarkable();
-// storeToRefs 会将 store 中原本就是响应式的变量转换为 ref，这些 ref 组成一个对象。所以解构的时候能继续维持响应式！
-// const a = storeToRefs(appStore);
-// console.log(a);
-// 将 markdown 内容转换为 html，然后进行安全处理
-// todo：这里要防止 XSS 注入！
-// const html = md.render(firstContent);
-// computed 所依赖的属性如果不是响应式的，那么内部属性发生变化的时候，计算属性不会重新计算，尽管内部属性在其他地方是响应式的！！！
-// const isVisible = computed({
-//   get: () => {
-//     console.log("get");
-//     return appStore.categorizerVisible;
-//   },
-//   set: (value) => {
-//     appStore.categorizerVisible = value;
-//   },
-// });
 // 类属输入
 const classInput = ref("");
 // 只要调用就会实例化一个 Vditor 编辑器，不管是否使用解构的 vditor
@@ -61,12 +51,12 @@ const classInput = ref("");
 const close = () => {
   // e.preventDefault();
   console.log("close");
-  appStore.hideCategorizer();
+  categorizerStore.hideCategorizer();
 };
 
 // 切换内容
 const setCurrentContentToVditor = () => {
-  appStore.setVditorValue(currentInput.value.content);
+  setVditorValue(currentInput.value.content);
 };
 
 // 根据 id 更新 copyInputs 中的单个 Input 对象
@@ -122,7 +112,7 @@ const checkOnNextBefore = () => {
   if (originalClass && originalClass === trimClassInput) return false; // 类属没有变化，返回
 
   // 拿到 Vditor 编辑器中的当前值
-  const vditorValue = appStore.getVditorValue();
+  const vditorValue = getVditorValue();
   // console.log("vditorValue", vditorValue);
   // 当前 Input 对象的原内容
   const originalContent = currentInput.value.content;
@@ -141,7 +131,7 @@ const nextBefore = () => {
     // 有类属，那就根据当前输入创建一个新的 Input 对象
     const newInput: Input = {
       id: currentInput.value.id,
-      content: appStore.getVditorValue() ?? currentInput.value.content,
+      content: getVditorValue() ?? currentInput.value.content,
       tags: classInput.value.split("-"),
     };
     // 记录这个更新对象
@@ -194,7 +184,7 @@ const handleEsc = () => {
     return;
   }
   // 实际更新 Inputs（动 allInputs 里边的数据）
-  appStore.updateAllInputs(updatedInputs);
+  updateAllInputs(updatedInputs);
   // 提示
   ElMessage.success(`太棒了！👍你已经类属 ${updatedInputs.length} 项了`);
   // 重置一些状态
@@ -213,7 +203,7 @@ const handleDelete = () => {
   // 删除当前的 Input 对象
   copyInputs.value.splice(currentIndex.value, 1);
   // 删除 allInputs 中对应的 Input 对象
-  appStore.deleteInput(currentInput.value.id);
+  deleteInput(currentInput.value.id);
   // 提示
   ElMessage.success("走你😜");
   // 当前索引 -1
@@ -239,7 +229,7 @@ const handleDelete = () => {
   <teleport to="body">
     <div
       class="overlay"
-      v-show="appStore.categorizerVisible"
+      v-show="categorizerVisible"
       tabindex="0"
       @keydown.esc="handleEsc"
     >
@@ -254,7 +244,6 @@ const handleDelete = () => {
           v-model="classInput"
           ref="classRef"
           @keydown.enter="next"
-          @keydown.shift.enter="previous"
         />
         <el-button
           :icon="Delete"
@@ -299,12 +288,6 @@ const handleDelete = () => {
   border-radius: 10px;
   /*text-align: center;*/
 }
-
-/*.text-area {
-  width: 100%;
-  border-radius: 10px;
-  margin-bottom: 20px;
-}*/
 
 .input-line {
   width: 50%;

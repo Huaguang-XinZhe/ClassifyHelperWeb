@@ -9,10 +9,14 @@ import { useAppStore } from "@/stores/appStore";
 import { useRouter } from "vue-router";
 import { useInputProcessor } from "@/hooks/useInputProcessor";
 import type { Input } from "@/types";
+import { useInputStore } from "@/stores/inputStore";
+import { useTreeStore } from "@/stores/treeStore";
 
 const radio = ref("文件读取");
 const input = ref("");
 const appStore = useAppStore();
+const inputStore = useInputStore();
+const treeStore = useTreeStore();
 const router = useRouter();
 const { parseInput, extractTagsArr, postInputList } = useInputProcessor();
 const upload = computed(() => {
@@ -46,8 +50,8 @@ const handleClick = () => {
   const allInputs = parseInput(input.value);
   const tagsArr = extractTagsArr(allInputs);
 
-  appStore.setAllInputs(allInputs);
-  appStore.addNodes(tagsArr);
+  inputStore.setAllInputs(allInputs);
+  treeStore.addNodes(tagsArr);
 
   navigateAndThen(allInputs);
 };

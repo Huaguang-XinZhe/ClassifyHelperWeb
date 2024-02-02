@@ -5,7 +5,7 @@ import type {
   AllowDropType,
   NodeDropType,
 } from "element-plus/es/components/tree/src/tree.type";
-import { useAppStore } from "@/stores/appStore";
+import { useTreeStore } from "@/stores/treeStore";
 
 const handleDragStart = (node: Node, ev: DragEvents) => {
   // console.log("drag start", node);
@@ -54,7 +54,7 @@ const allowDrag = (draggingNode: Node) => {
   return !draggingNode.data.label.includes("Level three 3-1-1");
 };
 
-const appStore = useAppStore();
+const treeStore = useTreeStore();
 // const catData = appStore.catData;
 
 // 自始自终监视不到任何变化！
@@ -79,7 +79,7 @@ const appStore = useAppStore();
     class="cat-tree"
     :allow-drop="allowDrop"
     :allow-drag="allowDrag"
-    :data="appStore.catData"
+    :data="treeStore.catData"
     draggable
     default-expand-all
     node-key="id"

@@ -2,15 +2,15 @@
 
 <script setup lang="ts">
 // 列表数据，包括 id 和 content
-import { useAppStore } from "@/stores/appStore";
+import { useInputStore } from "@/stores/inputStore";
 
-const appStore = useAppStore();
+const inputStore = useInputStore();
 </script>
 
 <template>
   <ul>
     <li
-      v-for="input in appStore.unclassifiedInputs"
+      v-for="input in inputStore.unclassifiedInputs"
       :key="input.id"
       draggable="true"
     >

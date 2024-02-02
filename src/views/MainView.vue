@@ -7,19 +7,26 @@ import RuleExplorer from "@/components/RuleExplorer.vue";
 import { useAppStore } from "@/stores/appStore";
 import AppendDialog from "@/components/AppendDialog.vue";
 import ImmersiveCategorizer from "@/components/ImmersiveCategorizer.vue";
+import { useCategorizerStore } from "@/stores/categorizerStore";
+import { computed, toRef } from "vue";
+import { useInputStore } from "@/stores/inputStore";
 
 const appStore = useAppStore();
+const inputStore = useInputStore();
+const { categorizerVisible, showCategorizer } = useCategorizerStore();
+
+// 控制 “进入沉浸式分类” 按钮的显隐
+const showCategorizerButtonVisible = computed(() => {
+  return toRef(inputStore, "unclassifiedInputs").value.length > 0;
+});
 </script>
 
 <template>
   <!--  如果沉浸式模态框显示，主界面就隐藏-->
-  <el-container class="container" v-show="!appStore.categorizerVisible">
+  <el-container class="container" v-show="!categorizerVisible">
     <el-header>
       <button @click="appStore.showDialog()">新增待分类内容</button>
-      <button
-        @click="appStore.showCategorizer()"
-        v-show="appStore.showCategorizerButtonVisible"
-      >
+      <button @click="showCategorizer()" v-show="showCategorizerButtonVisible">
         沉浸式分类
       </button>
     </el-header>

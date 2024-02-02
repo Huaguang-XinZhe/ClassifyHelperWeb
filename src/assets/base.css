@@ -17,9 +17,9 @@ ul {
   padding: 0;
 }
 
-li {
-  list-style: none;
-}
+/*li {*/
+/*  list-style: none;*/
+/*}*/
 
 h1 {
   margin: 0;
@@ -33,12 +33,12 @@ h1 {
 
 /* 滚动条内部的滑块 */
 ::-webkit-scrollbar-thumb {
-  background-color: rgb(190, 186, 186); /* 滑块的颜色 */
+  background-color: rgb(225, 225, 233); /* 滑块的颜色 */
   border-radius: 10px; /* 滑块的圆角 */
 }
 
 /* 滑块hover效果 */
 ::-webkit-scrollbar-thumb:hover {
-  background: rgb(225, 225, 233);
+  background: rgb(190, 186, 186);
   cursor: pointer; /* 这个小手不会呈现！ */
 }

@@ -4,7 +4,7 @@
 import { UploadFilled } from "@element-plus/icons-vue";
 import { computed, ref } from "vue";
 import type { UploadProps } from "element-plus";
-import { ElMessage } from "element-plus";
+import { ElInput, ElMessage } from "element-plus";
 import { useAppStore } from "@/stores/appStore";
 import { useRouter } from "vue-router";
 import { useInputProcessor } from "@/hooks/useInputProcessor";
@@ -39,36 +39,48 @@ const beforeUpload: UploadProps["beforeUpload"] = (rawFile) => {
 
 const handleClick = () => {
   if (!input.value) {
-    ElMessage.warning("没点东西你就想走？👀");
+    ElMessage.warning("没点输入你就想走？👀😜");
     return;
   }
 
-  const inputList = parseInput(input.value);
-  const tagsArr = extractTagsArr(inputList);
+  const allInputs = parseInput(input.value);
+  const tagsArr = extractTagsArr(allInputs);
 
-  appStore.setInputList(inputList);
+  appStore.setAllInputs(allInputs);
   appStore.addNodes(tagsArr);
 
-  navigateAndRequest(inputList);
-
-  // 清空输入框
-  input.value = "";
+  navigateAndThen(allInputs);
 };
 
-function navigateAndRequest(inputList: Input[]) {
+function navigateAndThen(inputList: Input[]) {
   router
     .push("/main")
     .then(() => {
+      // 跳转成功
+      // 发起 post 请求
       postInputList(inputList);
+      // 初始化 Vditor
+      // appStore.initializeVditor("");
     })
     .catch((error) => {
       ElMessage.error("跳转失败", error.message);
     });
 }
+
+// ElInput 的引用
+const textareaRef = ref<InstanceType<typeof ElInput>>();
+
+const handleChange = (val: string) => {
+  // console.log(val);
+  // 如果切换到 “粘贴文本” 一项，就自动聚焦到文本域
+  if (val === "粘贴文本") {
+    textareaRef.value?.focus();
+  }
+};
 </script>
 
 <template>
-  <el-radio-group v-model="radio">
+  <el-radio-group v-model="radio" @change="handleChange">
     <el-radio-button label="文件读取" />
     <el-radio-button label="粘贴文本" />
   </el-radio-group>
@@ -103,6 +115,8 @@ function navigateAndRequest(inputList: Input[]) {
       :autosize="{ minRows: 10, maxRows: 25 }"
       type="textarea"
       placeholder="Please input"
+      ref="textareaRef"
+      @keydown.ctrl.enter="handleClick"
     />
     <el-button @click="handleClick">确定</el-button>
   </div>

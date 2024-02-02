@@ -1,11 +1,29 @@
 import { defineStore } from "pinia";
-import { computed, reactive, ref } from "vue";
+import { computed, ref, shallowReactive } from "vue";
 import type { Input } from "@/types";
 import { Tree } from "@/tree";
+import Vditor from "vditor";
+// 千万别忘了 CSS！！！否则无法正常交互！
+import "vditor/dist/index.css";
+import { ElMessage } from "element-plus";
 
 export const useAppStore = defineStore("app", () => {
   const dialogVisible = ref(false);
-  const inputList = reactive<Input[]>([]);
+  // 控制沉浸式分类器的显示与隐藏
+  const categorizerVisible = ref(false);
+  // 所有的记录数据（浅响应式，以触发 computed）
+  const allInputs = shallowReactive<Input[]>([]);
+  const vditor = ref<Vditor | null>(null);
+  // 未分类的记录数据（筛选那些没有 tags 的记录）
+  const unclassifiedInputs = computed(() => {
+    return allInputs.filter((input) => !input.tags);
+  });
+  // 控制 “进入沉浸式分类” 按钮的显隐
+  const showCategorizerButtonVisible = computed(() => {
+    // 有 vditor 实例并且有未分类的记录
+    return vditor && unclassifiedInputs.value.length > 0;
+  });
+
   // 上次输入列表中的最大id
   let lastMaxId = 0;
   // 创建一个 tree 实例
@@ -33,6 +51,67 @@ export const useAppStore = defineStore("app", () => {
   //   },
   // );
 
+  // 根据 id 批量更新 allInputs 中的数据
+  function updateAllInputs(newInputs: Input[]) {
+    for (const newInput of newInputs) {
+      const index = allInputs.findIndex((input) => input.id === newInput.id);
+      if (index !== -1) {
+        allInputs.splice(index, 1, newInput);
+      }
+    }
+  }
+
+  // 根据 id 更新 allInputs 中的单个 Input 对象
+  // function updateInput(newInput: Input) {
+  //   const index = allInputs.findIndex((input) => input.id === newInput.id);
+  //   if (index !== -1) {
+  //     allInputs.splice(index, 1, newInput);
+  //   }
+  // }
+
+  // 根据 id 删除 allInputs 中的单个 Input 对象
+  function deleteInput(id: number) {
+    const index = allInputs.findIndex((input) => input.id === id);
+    if (index !== -1) {
+      allInputs.splice(index, 1);
+    }
+  }
+
+  // 初始化 Vditor
+  const initializeVditor = (initialContent: string) => {
+    vditor.value = new Vditor("vditor", {
+      height: 300,
+      toolbar: [],
+      toolbarConfig: {
+        hide: true,
+      },
+      after: () => {
+        ElMessage.success("Vditor 初始化成功！");
+        vditor.value!.setValue(initialContent);
+      },
+    });
+  };
+
+  // 给 Vditor 设值
+  const setVditorValue = (content: string) => {
+    vditor.value?.setValue(content);
+  };
+
+  // 获取 Vditor 的当前值
+  const getVditorValue = () => {
+    return vditor.value?.getValue();
+  };
+
+  const showCategorizer = () => {
+    console.log("showCategorizer");
+    categorizerVisible.value = true;
+  };
+
+  const hideCategorizer = () => {
+    console.log("hideCategorizer");
+    categorizerVisible.value = false;
+  };
+
   // 添加节点
   function addNodes(tagsArr: string[][]) {
     for (const tags of tagsArr) {
@@ -44,17 +123,28 @@ export const useAppStore = defineStore("app", () => {
     dialogVisible.value = true;
   };
 
-  function setInputList(list: Input[]) {
+  function setAllInputs(list: Input[]) {
     lastMaxId = list.length;
-    inputList.push(...list);
+    allInputs.push(...list);
   }
 
   return {
     dialogVisible,
     showDialog,
-    inputList,
-    setInputList,
+    unclassifiedInputs,
+    setAllInputs,
     catData,
     addNodes,
+    categorizerVisible,
+    showCategorizer,
+    hideCategorizer,
+    initializeVditor,
+    vditor,
+    setVditorValue,
+    getVditorValue,
+    // updateInput,
+    updateAllInputs,
+    deleteInput,
+    showCategorizerButtonVisible,
   };
 });

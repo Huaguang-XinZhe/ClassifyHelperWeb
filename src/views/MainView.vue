@@ -6,14 +6,22 @@ import ContentList from "@/components/ContentList.vue";
 import RuleExplorer from "@/components/RuleExplorer.vue";
 import { useAppStore } from "@/stores/appStore";
 import AppendDialog from "@/components/AppendDialog.vue";
+import ImmersiveCategorizer from "@/components/ImmersiveCategorizer.vue";
 
 const appStore = useAppStore();
 </script>
 
 <template>
-  <el-container class="container">
+  <!--  如果沉浸式模态框显示，主界面就隐藏-->
+  <el-container class="container" v-show="!appStore.categorizerVisible">
     <el-header>
       <button @click="appStore.showDialog()">新增待分类内容</button>
+      <button
+        @click="appStore.showCategorizer()"
+        v-show="appStore.showCategorizerButtonVisible"
+      >
+        沉浸式分类
+      </button>
     </el-header>
     <el-main>
       <!-- 左栏 -->
@@ -28,6 +36,8 @@ const appStore = useAppStore();
     </el-main>
   </el-container>
   <AppendDialog />
+  <!--  虽然它不显示，也没有 Dom 结构（v-if），但依然会挂载-->
+  <ImmersiveCategorizer />
 </template>
 
 <style scoped>

@@ -24,4 +24,8 @@ const input = ref("");
   height: 20%;
   text-align: center;
 }
+
+li {
+  list-style: none;
+}
 </style>

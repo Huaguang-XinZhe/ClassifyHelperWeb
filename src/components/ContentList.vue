@@ -5,12 +5,15 @@
 import { useAppStore } from "@/stores/appStore";
 
 const appStore = useAppStore();
-const inputList = appStore.inputList;
 </script>
 
 <template>
   <ul>
-    <li v-for="input in inputList" :key="input.id" draggable="true">
+    <li
+      v-for="input in appStore.unclassifiedInputs"
+      :key="input.id"
+      draggable="true"
+    >
       {{ input.content }}
     </li>
   </ul>
